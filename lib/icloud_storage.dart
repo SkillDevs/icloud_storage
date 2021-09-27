@@ -4,13 +4,16 @@ import 'package:flutter/services.dart';
 
 class IcloudFile {
   final String name;
-  final DateTime creationDate;
+  final String fileUrl;
+  final DateTime? creationDate;
 
-  IcloudFile(this.name, this.creationDate);
+  IcloudFile(this.name, this.fileUrl, this.creationDate);
 
   @override
   String toString() {
-    return "$name $creationDate";
+    return '''$name 
+    $creationDate 
+    $fileUrl''';
   }
 }
 
@@ -48,14 +51,19 @@ class ICloudStorage {
       return [];
     }
 
-    return res
-        .map(
-          (e) => IcloudFile(
-            e['fileName'] as String,
-            DateTime.fromMillisecondsSinceEpoch(e['creationDate'] as int, isUtc: true).toLocal(),
-          ),
-        )
-        .toList();
+    return res.map((e) {
+      DateTime? creationDate;
+
+      if (e['creationDate'] != null) {
+        creationDate = DateTime.fromMillisecondsSinceEpoch(e['creationDate'] as int, isUtc: true).toLocal();
+      }
+
+      return IcloudFile(
+        e['fileName'] as String,
+        e['fileUrl'] as String,
+        creationDate,
+      );
+    }).toList();
   }
 
   /// Lists files from the iCloud container directory, which lives on the

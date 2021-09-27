@@ -53,7 +53,7 @@ public class SwiftIcloudStoragePlugin: NSObject, FlutterPlugin {
       return
     }
     
-    guard let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: containerId)
+    guard let containerURL = getBaseUploadUrl()
     else {
       result(containerError)
       return
@@ -100,7 +100,10 @@ public class SwiftIcloudStoragePlugin: NSObject, FlutterPlugin {
       guard let fileCreationDate = fileItem.value(forAttribute: NSMetadataItemFSCreationDateKey) as? NSDate else { continue }
       if fileURL.absoluteString.last == "/" { continue }
       let relativePath = String(fileURL.absoluteString.dropFirst(containerURL.absoluteString.count))
-		fileObjs.append(["fileName": relativePath, "creationDate": Int(fileCreationDate.timeIntervalSince1970 * 1000)])
+      fileObjs.append([
+      "fileName": relativePath, 
+      "fileUrl": fileURL.absoluteString,
+      "creationDate": Int(fileCreationDate.timeIntervalSince1970 * 1000)])
     }
     if !eventChannelName.isEmpty {
       let streamHandler = self.streamHandlers[eventChannelName]!
@@ -110,6 +113,12 @@ public class SwiftIcloudStoragePlugin: NSObject, FlutterPlugin {
       query.stop()
       result(fileObjs)
     }
+  }
+
+	private func getBaseUploadUrl() -> URL?  {
+		let url = FileManager.default.url(forUbiquityContainerIdentifier: containerId)
+    return url
+		// return url?.appendingPathComponent("Documents")
   }
   
   private func upload(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
@@ -122,7 +131,7 @@ public class SwiftIcloudStoragePlugin: NSObject, FlutterPlugin {
       return
     }
     
-    guard let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: containerId)
+    guard let containerURL = getBaseUploadUrl()
     else {
       result(containerError)
       return
@@ -211,7 +220,7 @@ public class SwiftIcloudStoragePlugin: NSObject, FlutterPlugin {
       return
     }
     
-    guard let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: containerId)
+    guard let containerURL = getBaseUploadUrl()
     else {
       result(containerError)
       return
@@ -303,7 +312,7 @@ public class SwiftIcloudStoragePlugin: NSObject, FlutterPlugin {
       return
     }
     
-    guard let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: containerId)
+    guard let containerURL = getBaseUploadUrl()
     else {
       result(containerError)
       return
@@ -349,7 +358,7 @@ public class SwiftIcloudStoragePlugin: NSObject, FlutterPlugin {
   }
   
   let argumentError = FlutterError(code: "E_ARG", message: "Invalid Arguments", details: nil)
-  let containerError = FlutterError(code: "E_CTR", message: "Invalid containerId, or user is not signed in, or user disabled iCould permission", details: nil)
+  let containerError = FlutterError(code: "E_CTR", message: "Invalid containerId, or user is not signed in, or user disabled iCloud permission", details: nil)
   
   private func nativeCodeError(_ error: Error) -> FlutterError {
     return FlutterError(code: "E_NAT", message: "Native Code Error", details: "\(error)")
