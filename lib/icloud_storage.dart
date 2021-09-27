@@ -2,6 +2,18 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/services.dart';
 
+class IcloudFile {
+  final String name;
+  final DateTime creationDate;
+
+  IcloudFile(this.name, this.creationDate);
+
+  @override
+  String toString() {
+    return "$name $creationDate";
+  }
+}
+
 /// A function-type alias takes a stream as argument and returns void
 typedef StreamHandler<T> = void Function(Stream<T>);
 
@@ -28,8 +40,22 @@ class ICloudStorage {
   /// Lists files from the iCloud container directory, which lives on the device
   ///
   /// Returns a future completing with a list of file names
-  Future<List<String>?> listFiles() async {
-    return await (_channel.invokeListMethod<String>('listFiles', {'eventChannelName': ''}));
+  Future<List<IcloudFile>> listFiles() async {
+    final List<Map<Object?, Object?>>? res =
+        await (_channel.invokeListMethod<Map<Object?, Object?>>('listFiles', {'eventChannelName': ''}));
+
+    if (res == null) {
+      return [];
+    }
+
+    return res
+        .map(
+          (e) => IcloudFile(
+            e['fileName'] as String,
+            DateTime.fromMillisecondsSinceEpoch(e['creationDate'] as int, isUtc: true).toLocal(),
+          ),
+        )
+        .toList();
   }
 
   /// Lists files from the iCloud container directory, which lives on the

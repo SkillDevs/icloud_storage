@@ -93,21 +93,22 @@ public class SwiftIcloudStoragePlugin: NSObject, FlutterPlugin {
   }
   
   private func onListQueryNotification(query: NSMetadataQuery, containerURL: URL, eventChannelName: String, result: @escaping FlutterResult) {
-    var filePaths: [String] = []
+    var fileObjs: [Dictionary<String, Any>] = []
     for item in query.results {
       guard let fileItem = item as? NSMetadataItem else { continue }
       guard let fileURL = fileItem.value(forAttribute: NSMetadataItemURLKey) as? URL else { continue }
+      guard let fileCreationDate = fileItem.value(forAttribute: NSMetadataItemFSCreationDateKey) as? NSDate else { continue }
       if fileURL.absoluteString.last == "/" { continue }
       let relativePath = String(fileURL.absoluteString.dropFirst(containerURL.absoluteString.count))
-      filePaths.append(relativePath)
+		fileObjs.append(["fileName": relativePath, "creationDate": Int(fileCreationDate.timeIntervalSince1970 * 1000)])
     }
     if !eventChannelName.isEmpty {
       let streamHandler = self.streamHandlers[eventChannelName]!
-      streamHandler.setEvent(filePaths)
+      streamHandler.setEvent(fileObjs)
     } else {
       removeObservers(query, watchUpdate: false)
       query.stop()
-      result(filePaths)
+      result(fileObjs)
     }
   }
   
