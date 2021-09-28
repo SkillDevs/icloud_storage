@@ -62,7 +62,7 @@ public class SwiftIcloudStoragePlugin: NSObject, FlutterPlugin {
     
     let query = NSMetadataQuery.init()
     query.operationQueue = .main
-    query.searchScopes = [NSMetadataQueryUbiquitousDataScope]
+    query.searchScopes = [NSMetadataQueryUbiquitousDocumentsScope]
     query.predicate = NSPredicate(format: "%K beginswith %@", NSMetadataItemPathKey, containerURL.path)
     addListFilesObservers(query: query, containerURL: containerURL, eventChannelName: eventChannelName, result: result)
     
@@ -117,8 +117,7 @@ public class SwiftIcloudStoragePlugin: NSObject, FlutterPlugin {
 
 	private func getBaseUploadUrl() -> URL?  {
 		let url = FileManager.default.url(forUbiquityContainerIdentifier: containerId)
-    return url
-		// return url?.appendingPathComponent("Documents")
+		return url?.appendingPathComponent("Documents")
   }
   
   private func upload(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
